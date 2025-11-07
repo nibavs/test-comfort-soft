@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class NumberService {
@@ -15,7 +17,9 @@ public class NumberService {
     public int findNthSmallest(String path, int n) throws IOException {
         List<Integer> numbers = readNumbersFromExcel(path);
         if (n < 1 || n > numbers.size()) throw new IllegalArgumentException("N вне диапазона значений: " + n);
-        return quickSelect(numbers, 0, numbers.size() - 1, n - 1);
+
+        List<Integer> uniqueNumbers = new ArrayList<>(new HashSet<>(numbers));
+        return quickSelect(uniqueNumbers, 0, uniqueNumbers.size() - 1, n - 1);
     }
 
     private List<Integer> readNumbersFromExcel(String filePath) throws IOException {
@@ -37,7 +41,8 @@ public class NumberService {
     private int quickSelect(List<Integer> list, int left, int right, int k) {
         if (left == right) return list.get(left);
 
-        int pivotIndex = partition(list, left, right);
+        int randomIndex = left + new Random().nextInt(right - left);
+        int pivotIndex = partition(list, left, right, randomIndex);
         if (k == pivotIndex) {
             return list.get(k);
         } else if (k < pivotIndex) {
@@ -47,8 +52,9 @@ public class NumberService {
         }
     }
 
-    private int partition(List<Integer> list, int left, int right) {
-        int pivot = list.get(right);
+    private int partition(List<Integer> list, int left, int right, int randomIndex) {
+        int pivot = list.get(randomIndex);
+        swap(list, randomIndex, right);
         int i = left;
 
         for (int j = left; j < right; j++) {
